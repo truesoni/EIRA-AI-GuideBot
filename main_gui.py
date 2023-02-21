@@ -16,17 +16,17 @@ import pyglet
 import time
 from tkinter import *
 from bot_utils import *
-import time
+
 
 
 # bot variables
 idk = "I do not understand"
 bot_name = "EIRA"
 
-json_file = "D:\EIRA\data_file.json"
+json_file = "database.json"
 
 quit_txt =["quit", "OK go to sleep",
-            "quit","thank you", "okay go to sleep", "sleep", "OK goto sleep"]
+            "quit","thank you", "okay go to sleep", "sleep", "OK goto sleep", "okay thank you"]
 
 
 ####################################################################### NEURAL NET SECTION ###################################################
@@ -37,8 +37,8 @@ quit_txt =["quit", "OK go to sleep",
 def normal_mode(sentence):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    with open(json_file, 'r') as data_file:
-        intents = json.load(data_file)
+    with open(json_file, 'r') as database:
+        intents = json.load(database)
 
     File = 'data.pth'
     data = torch.load(File)
@@ -380,6 +380,7 @@ class Application:
                 self.table_.insert("end", f"Response : \"{temp_response}\"\n")
                 self.table_.configure(state="disabled")
                 self.save_data_button.configure(state="normal", fg = GREEN)
+                self.reset_button.configure(state="normal")
 
             else:
                 self.add_response_button.configure(text="Invalid", fg = RED)
@@ -396,6 +397,8 @@ class Application:
                 self.table_.configure(state="normal")
                 self.table_.insert("end", f"Pattern : \"{temp_pattern}\"\n")
                 self.table_.configure(state="disabled")
+                self.reset_button.configure(state="normal")
+
             else:
                 self.add_pattern_button.configure(text="Invalid", fg = RED)
                 self.window.update()
@@ -438,7 +441,7 @@ class Application:
             self.data_table.place(relheight=0.8, relwidth=0.98, relx= 0.01, rely=0.09)
             self.data_table.configure(state="normal")
             self.data_table.delete(1.0, "end-1c")
-            self.data_table.configure(fg = TEXT_COLOR, bg = BLACK, state="disabled")
+            self.data_table.configure(fg = "#FFF", bg = BLACK, state="disabled")
             self.start_training_button.configure(command=lambda: start_training())
             self.start_training_button.place(relx=0.1, rely=0.9, relheight=0.06, relwidth=0.1)
             
@@ -458,8 +461,8 @@ class Application:
                 self.window.update()
                 f = open(json_file, 'r')
 
-                with f as data_file:
-                    intents = json.load(data_file)
+                with f as database:
+                    intents = json.load(database)
 
 
                 all_words = []
@@ -667,6 +670,7 @@ class Application:
             self.save_data_button.place(relwidth=0.1, relheight=0.06, relx=0.15, rely=0.8)
             self.reset_button.place(relwidth=0.1, relheight=0.06, relx=0.05, rely=0.8)
             self.reset_button.configure(command=lambda:reset("add_data"))
+            self.reset_button.configure(state="disabled")
             self.table_label.place(relwidth=0.2,relheight=0.06, relx=0.45 , rely=0.1)
             self.table_.place(relheight=0.7, relwidth=0.35, relx=0.38, rely=0.2)
             
@@ -1104,7 +1108,7 @@ class Application:
                     self.text_widget.update()
                     talk("see ya later")
                     self.text_widget.config(state="normal")
-                    self.text_widget.delete('1.0',END)
+                    #self.text_widget.delete('1.0',END)
                     self.text_widget.update()
                     self.text_widget.config(state="disabled")
                     run = False

@@ -13,8 +13,8 @@ from main_gui import json_file
 
 f = open(json_file, 'r')
 
-with f as data_file:
-    intents = json.load(data_file)
+with f as database:
+    intents = json.load(database)
 
 
 all_words = []

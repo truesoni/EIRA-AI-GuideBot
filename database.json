@@ -51,7 +51,9 @@
                 "where is principal's office",
                 "tell me route to principal office",
                 "principal office",
-                "where is principal"
+                "where is principal",
+                "principal ka office kahan hai",
+                "principlal ka office kaha hai"
             ],
             "responses": [
                 "It is located in the 2nd floor of new building, inside the admin block, room number C201"
@@ -63,7 +65,7 @@
                 "what is principal's name",
                 "who is your principal",
                 "principal name",
-                "who is principal of your college"
+                "who is the principal of our college"
             ],
             "responses": [
                 "Dr. Rajiv Khatri is the Principal of our college."
@@ -138,7 +140,7 @@
         },
         {
             "responses": [
-                "I am Globot,  an A.I. powered robot, designed and developed by a group of young engineers of ECE branch."
+                "I am Eera,  an A.I. powered robot, designed and developed by a group of young engineers of E.C.E. branch."
             ],
             "patterns": [
                 "what is your name",
@@ -159,23 +161,12 @@
                 "vice principal of global college"
             ],
             "tag": "vice principal name"
-        },
-        {
-            "tag": "cs hod",
-            "responses": [
-                "Dr. Sumit nema is the head of department of CS branch"
-            ],
-            "patterns": [
-                "Sumit nema",
-                "hod cs branch",
-                "Head of department of Computer Science Branch"
-            ]
         }
     ],
     "essentials": {
-        "password": "1234",
+        "password": "",
         "master": "shubham@456456",
-        "json_location": "D:\\GLOBOT\\data_file.json",
+        "json_location": "D:\\GLOBOT\\database.json",
         "data.pth_location": "unknown"
     }
 }
