@@ -114,11 +114,21 @@ class Mydb :
             return []
         return res
 
+    def get_attr(self, attr: str) -> str :
+        self.cursor.execute(f"""
+        SELECT value from system_table
+        WHERE tag = '{attr}'
+        """)
+        l = self.cursor.fetchall()
+        try :
+            s = list(l[0])[0]
+
+        except IndexError :
+            return ''
+        return s
+
 
 u = Mydb()
-u.delete_data('Nam')
-u.delete_data('Age')
-u.delete_data('Name')
-print(u.get_tags())
-print(u.get_responses('tarak'))
-print(u.get_patterns('tarak'))
+u.insert_data_system('m_password', '1')
+u.update_data('password', '22')
+print(u.get_attr('password'))
