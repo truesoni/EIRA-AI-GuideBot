@@ -45,6 +45,9 @@ sys_black = "system_b.png"
 key_white = "key_w.png"
 key_black = "key_b.png"
 transparent = "transparent.png"
+train_black = "train_b.png"
+train_white = "train_w.png"
+
 
 eye_open_w = 'eye_open_w.png'
 eye_open_b = 'eye_open_b.png'
@@ -62,7 +65,7 @@ GREEN = "#00FF00"
 BLUE = "#0000FF"
 WHITE = "#FFFFFF"
 BLACK = "#000000"
-LIGHT_GREY = "#D3D3D3"
+LIGHT_GREY = "#5B6068"
 DARK_GREY = "#222222"
 AQUA = "#00FFFF"
 LIGHT_BLUE = "#1da2dc"
@@ -252,6 +255,8 @@ class App:
             os.path.join(image_path, transparent)), size=(1600, 900))
         self.texture_black_2 = customtkinter.CTkImage(Image.open(
             os.path.join(image_path, texture2)), size=(1600, 900))
+        self.train_img = customtkinter.CTkImage(dark_image=Image.open(os.path.join(
+            image_path, train_white)), light_image=Image.open(os.path.join(image_path, train_black)), size=(25, 25))
 
         self.eye_cl = customtkinter.CTkImage(dark_image=Image.open(os.path.join(
             image_path, eye_closed_w)), light_image=Image.open(os.path.join(image_path, eye_closed_b)), size=(20, 20))
@@ -267,7 +272,7 @@ class App:
 
         print(self.PASSWORD)
 
-        # self.home()
+        #self.home()
         self.settings_page()
 
     def home(self) -> None:
@@ -367,6 +372,28 @@ class App:
         self.college_logo_label = customtkinter.CTkLabel(
             master=self.frame_login, text='', image=self.college_logo_img, fg_color='transparent')
         self.college_logo_label.place(x=200, y=350, anchor=CENTER)
+
+    def change_scaling(self, new_scaling: str):
+        new_scaling_float = int(new_scaling.replace("%", "")) / 100
+        customtkinter.set_widget_scaling(new_scaling_float)
+
+    def change_theme(self, new_theme : str) :
+        customtkinter.set_appearance_mode(new_theme)
+
+    def change_color(self, new_color : str) :
+        customtkinter.set_default_color_theme(new_color)
+        Color_theme = new_color
+        self.window.update()
+        self.settings_page()
+
+    def change_volume(self, new_volume) :
+        pass
+
+    def change_voice(self, new_voice) :
+        pass
+
+    def change_speed(self, new_speed) :
+        pass
 
     def settings_page(self) -> None:
         self.switch('settings')
@@ -909,13 +936,209 @@ class App:
             self.same_validity_label = customtkinter.CTkLabel(
                 master=self.frame_cp)
 
-        def system_setting():
-            def change_scaling(self, new_scaling: str):
-                new_scaling_float = int(new_scaling.replace("%", "")) / 100
-                customtkinter.set_widget_scaling(new_scaling_float)
+        def system_setting(self):
+
+            self.switch('system_settings')
+            
+            self.frame_system_settings = customtkinter.CTkFrame(
+                master=self.frame_settings)
+            self.frame_system_settings.place(
+                relheight=1, relwidth=0.84, relx=0.578, rely=0.5, anchor=CENTER)
+            
+            """VISUAL SETTINGS"""
+            
+            self.add_visual_settings_label = customtkinter.CTkLabel(master=self.frame_system_settings, text="Visual Settings", height=45, fg_color=(DARK_GREY), bg_color='transparent',
+                                                               font=customtkinter.CTkFont(size=15), text_color=Color_theme, corner_radius=5)
+            
+            self.add_visual_settings_label.place(relwidth=0.45, relx=0.25, rely=0.09, anchor=CENTER)
+
+            self.frame_visual_settings = customtkinter.CTkFrame(
+                master=self.frame_system_settings)
+            self.frame_visual_settings.place(
+                relheight=0.85, relwidth=0.45, relx=0.25, rely=0.55, anchor=CENTER)
+            
+            self.appearance_mode_label = customtkinter.CTkLabel(self.frame_visual_settings, text="Change Appearance Theme", font=customtkinter.CTkFont(size=15), bg_color=LIGHT_GREY, anchor = 'w', corner_radius=15)
+
+            self.appearance_mode_label.place(relwidth = 0.6, relx = 0.05, rely = 0.05, anchor  = 'w')
+
+            self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.frame_visual_settings, values=["Dark", "Light", "System"],
+                                                                       command= self.change_theme)
+        
+            self.appearance_mode_optionemenu.place(relx = 0.8, rely = 0.05, anchor  = CENTER)
+
+
+
+            self.color_mode_label = customtkinter.CTkLabel(self.frame_visual_settings, text="Change Background Color", font=customtkinter.CTkFont(size=15), bg_color=LIGHT_GREY, anchor = 'w', corner_radius=15)
+
+            self.color_mode_label.place(relwidth = 0.6, relx = 0.05, rely = 0.2, anchor  = 'w')
+
+            self.color_mode_optionemenu = customtkinter.CTkOptionMenu(self.frame_visual_settings, values=['blue', 'green'],
+                                                                       command= self.change_color)
+        
+            self.color_mode_optionemenu.place(relx = 0.8, rely = 0.2, anchor  = CENTER)
+
+
+            self.scaling_label = customtkinter.CTkLabel(self.frame_visual_settings, text="Change Background Color", font=customtkinter.CTkFont(size=15), bg_color=LIGHT_GREY, anchor = 'w', corner_radius=15)
+
+            self.scaling_label.place(relwidth = 0.6, relx = 0.05, rely = 0.35, anchor  = 'w')
+
+            self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.frame_visual_settings, values=["100%", "110%", "120%", "80%", "90%" ],
+                                                               command=self.change_scaling)
+            
+            self.scaling_optionemenu.place( relx = 0.8, rely = 0.35, anchor  = CENTER)
+
+            """AUDIO SETTINGS"""
+
+            
+            self.add_audio_settings_label = customtkinter.CTkLabel(master=self.frame_system_settings, text="Audio Settings", height=45, fg_color=(DARK_GREY), bg_color='transparent',
+                                                               font=customtkinter.CTkFont(size=14), text_color=Color_theme, corner_radius=5)
+            
+            self.add_audio_settings_label.place(relwidth=0.45, relx=0.75, rely=0.09, anchor=CENTER)
+
+            self.frame_audio_settings = customtkinter.CTkFrame(
+                master=self.frame_system_settings)
+            self.frame_audio_settings.place(
+                relheight=0.85, relwidth=0.45, relx=0.75, rely=0.55, anchor=CENTER)
+
+        def training_page(self) :
+    
+            def start_training() :
+                self.start_training_btn.configure(state = 'disabled')
+                self.data_table.configure(state = 'normal')
+                self.data_table.delete('1.0', tkinter.END)
+                tags = self.db.get_tags()
+                all_words = []
+                xy = []
+
+                for tag in tags :
+                    patterns = self.db.get_patterns(tag)
+                    for pattern in patterns:
+                        w = tokenize(pattern)
+                        all_words.extend(w)
+                        xy.append((w, tag))
+                
+                ignore_words = ['?', '!', ',', '.']
+                all_words = [stem(word) for word in all_words if word not in ignore_words]
+                all_words = sorted(set(all_words))
+                tags = sorted(set(tags))
+
+                X_train = []
+                Y_train = []
+                for (pattern_sentence, tag) in xy:
+                    bag = bag_of_words(pattern_sentence, all_words)
+                    X_train.append(bag)
+
+                    label = tags.index(tag)
+                    Y_train.append(label)  # cross entropy loss
+
+                X_train = np.array(X_train)
+                Y_train = np.array(Y_train)
+
+
+                class ChatDataSet(Dataset):
+                    def __init__(self):
+                        self.n_samples = len(X_train)
+                        self.x_data = X_train
+                        self.y_data = Y_train
+
+                    def __getitem__(self, index):
+                        return self.x_data[index], self.y_data[index]
+
+                    def __len__(self):
+                        return self.n_samples
+
+                # hyper parameter
+
+
+                batch_size = 8
+                hidden_size = 8
+                output_size = len(tags)
+                input_size = len(X_train[0])
+                learning_rate = .001
+                num_epochs = 1000
+
+
+                dataset = ChatDataSet()
+                train_loader = DataLoader(dataset=dataset,
+                                        batch_size=batch_size,
+                                        shuffle=True,
+                                        num_workers=0)
+                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+                model = NeuralCode(input_size, hidden_size, output_size).to(device)
+
+                #loss and optimizer
+
+                criterion = nn.CrossEntropyLoss()
+                optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+                for epoch in range(num_epochs):
+                    for (words, labels) in train_loader:
+                        words = words.to(device)
+                        labels = labels.to(dtype=torch.long).to(device)
+
+                        # forward
+                        outputs = model(words)
+                        loss = criterion(outputs, labels)
+
+                        # backward and optimizer steps
+
+                        optimizer.zero_grad()
+                        loss.backward()
+                        optimizer.step()
+                    if (epoch + 1) % 100 == 0:
+                        self.data_table.insert("end", f'Epoch [{epoch+1}/{num_epochs}], Loss : {loss.item():.4f}\n')
+                        self.data_table.update()
+
+                self.data_table.insert("end", f'Final loss : {loss.item():.4f}\n')
+
+                data = {
+                    "model_state": model.state_dict(),
+                    "input_size": input_size,
+                    "output_size": output_size,
+                    "hidden_size": hidden_size,
+                    "all_words": all_words,
+                    "tags": tags
+                }
+                File = "data.pth"
+
+                torch.save(data, File)
+
+                for i in range(10):
+                    self.data_table.insert("end",'.\n')
+                    time.sleep(0.2)
+                    self.window.update()
+
+                self.data_table.insert("end", f'Training Completed.Please Restart the app to see changes.')
+                self.data_table.update()
+
+                self.start_training_btn.configure(state = 'normal')
+                self.data_table.configure(state = 'disabled')
+
+
+            self.switch('training_page')
+
+            self.frame_training = customtkinter.CTkFrame(
+                master=self.frame_settings)
+            self.frame_training.place(
+                relheight=1, relwidth=0.84, relx=0.578, rely=0.5, anchor=CENTER)
+            
+            self.training_label = customtkinter.CTkLabel(master=self.frame_training, text="\"TRAIN EIRA\"", height=45, fg_color=(DARK_GREY), bg_color='transparent',
+                                                               font=customtkinter.CTkFont(size=17), text_color=Color_theme, corner_radius=5)
+            
+            self.training_label.place(relx = 0.5, rely = 0.09, anchor = CENTER, relwidth = 0.5)
+
+            self.data_table = customtkinter.CTkTextbox(master=self.frame_training, fg_color=(LIGHT_GREY, DARK_GREY) ,text_color=GREEN, state = 'disabled', font=customtkinter.CTkFont(size=15))
+            self.data_table.place(relx = 0.5, rely = 0.5, anchor = CENTER, relwidth = 0.5, relheight = 0.75)
+
+            self.start_training_btn = customtkinter.CTkButton(master=self.frame_training, text="START", width=150, height=45, border_width=2, border_color=GREEN,
+                                                         text_color=GREEN, fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: start_training())
+
+            self.start_training_btn.place(relx = 0.5, rely = 0.92, anchor = CENTER)
+
 
         def about():
-            pass
+            self.switch('about')
+
 
         self.frame_settings = customtkinter.CTkFrame(master=self.window)
         self.frame_settings.place(
@@ -942,14 +1165,19 @@ class App:
             relwidth=0.95, relheight=0.05, relx=0.5, rely=0.25, anchor=CENTER)
 
         self.system_setting_btn = customtkinter.CTkButton(master=self.side_panel_settings, image=self.sys_img, text='System', font=customtkinter.CTkFont(
-            size=16), fg_color='transparent', border_width=2, command=lambda: system_setting(), anchor="w")
+            size=16), fg_color='transparent', border_width=2, command=lambda: system_setting(self), anchor="w")
         self.system_setting_btn.place(
             relwidth=0.95, relheight=0.05, relx=0.5, rely=0.35, anchor=CENTER)
 
+        self.training_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Train Bot', image=self.train_img, font=customtkinter.CTkFont(
+            size=16), fg_color='transparent', border_width=2, command=lambda: training_page(self), anchor="w")
+        self.training_btn.place(relwidth=0.95, relheight=0.05,
+                             relx=0.5, rely=0.45, anchor=CENTER)
+        
         self.about_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='About EIRA', image=self.robot_img, font=customtkinter.CTkFont(
             size=16), fg_color='transparent', border_width=2, command=lambda: about(), anchor="w")
         self.about_btn.place(relwidth=0.95, relheight=0.05,
-                             relx=0.5, rely=0.45, anchor=CENTER)
+                             relx=0.5, rely=0.55, anchor=CENTER)
 
     def back(self, dest: str) -> None:
         if dest == 'login':
@@ -983,25 +1211,65 @@ class App:
                 pass
         if page == 'add_data':
             try:
-                self.add_data_btn.configure(fg_color=Color_theme)
                 self.del_data_btn.configure(fg_color='transparent')
                 self.change_pass_btn.configure(fg_color='transparent')
+                self.system_setting_btn.configure(fg_color='transparent')
+                self.training_btn.configure(fg_color='transparent')
+                self.about_btn.configure(fg_color='transparent')
+                self.add_data_btn.configure(fg_color=Color_theme)
             except:
                 pass
         if page == 'del_data':
             try:
-                self.del_data_btn.configure(fg_color=Color_theme)
                 self.add_data_btn.configure(fg_color='transparent')
                 self.change_pass_btn.configure(fg_color='transparent')
+                self.system_setting_btn.configure(fg_color='transparent')
+                self.training_btn.configure(fg_color='transparent')
+                self.about_btn.configure(fg_color='transparent')
+                self.del_data_btn.configure(fg_color=Color_theme)
             except:
                 pass
         if page == 'change_pass':
             try:
                 self.del_data_btn.configure(fg_color='transparent')
                 self.add_data_btn.configure(fg_color='transparent')
+                self.system_setting_btn.configure(fg_color='transparent')
+                self.training_btn.configure(fg_color='transparent')
+                self.about_btn.configure(fg_color='transparent')
                 self.change_pass_btn.configure(fg_color=Color_theme)
             except:
                 pass
+        if page == 'system_settings' :
+            try :
+                self.del_data_btn.configure(fg_color='transparent')
+                self.add_data_btn.configure(fg_color='transparent')
+                self.change_pass_btn.configure(fg_color='transparent')
+                self.about_btn.configure(fg_color='transparent')
+                self.training_btn.configure(fg_color='transparent')
+                self.system_setting_btn.configure(fg_color=Color_theme)
+            except:
+                pass
+        if page == 'about' :
+            try :
+                self.del_data_btn.configure(fg_color='transparent')
+                self.add_data_btn.configure(fg_color='transparent')
+                self.change_pass_btn.configure(fg_color='transparent')
+                self.system_setting_btn.configure(fg_color='transparent')
+                self.training_btn.configure(fg_color='transparent')
+                self.about_btn.configure(fg_color=Color_theme)
+            except:
+                pass
+        if page == 'training_page' :
+            try :
+                self.del_data_btn.configure(fg_color='transparent')
+                self.add_data_btn.configure(fg_color='transparent')
+                self.change_pass_btn.configure(fg_color='transparent')
+                self.system_setting_btn.configure(fg_color='transparent')
+                self.about_btn.configure(fg_color='transparent')
+                self.training_btn.configure(fg_color=Color_theme)
+            except:
+                pass 
+
 
 
 if __name__ == "__main__":
