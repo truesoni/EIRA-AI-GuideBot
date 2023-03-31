@@ -59,7 +59,7 @@ def bag_of_words(tokenized_sentence, all_words):
 # Speech to text
 def recognizer():
    
-    key = 0
+    key = 'n'
     sender = "You"
     
     
@@ -68,7 +68,7 @@ def recognizer():
         with sr.Microphone() as source:
             audio = r.listen(source)
     except OSError:
-        txt = "Microphone not detected, please contact college authorities"
+        txt = "TECHNICAL ERR. (MICERR) :{"
         key = 'm'
         sender = "EIRA"
         return txt, key, sender      
@@ -80,11 +80,11 @@ def recognizer():
     except sr.UnknownValueError:
         key = 'a'
         sender = "EIRA"
-        txt = "EIRA could not understand audio"
+        txt = "Sorry I didn't understand. Can you please repeat?"
         return txt, key, sender
     
     except sr.RequestError :
-        txt = "SERVER DOWN or NO Internet CONNECTION, please contact college authorities"
+        txt = "SERVERS ARE DOWN :/ "
         key = 'e'
         sender = "EIRA"
         return txt, key, sender
@@ -104,9 +104,9 @@ def play(mp3_file):
 def talk(text):
     # initialisation
     engine = pyttsx3.init()
-    
+
     voices = engine.getProperty('voices')
-    engine.setProperty('voice', voices[0].id) 
+    engine.setProperty('voice', voices[1].id) 
     engine.setProperty('rate', 150)
     # running
     engine.say(text)

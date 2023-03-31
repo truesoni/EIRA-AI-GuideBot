@@ -1,1 +1,1 @@
-font=customtkinter.CTkFont(size=20)
+  print(f"{key} , {sender} : {text}")

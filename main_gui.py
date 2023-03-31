@@ -980,14 +980,12 @@ class Application:
         self.table_ = Text(self.window,width = 20, bg = BG_COLOR,
                                 fg = TEXT_COLOR, font = FONT, padx = 5, pady = 5, state="disabled")
         
-        
         # add data vars
         self.add_tag_label = Label(self.window, text="Enter Tag", font= FONT_BOLD)
         self.add_tag_text = Text(self.window, bg = BG_COLOR, fg=TEXT_COLOR, 
                                 font= FONT, padx=5,pady=5, insertbackground= WHITE)
         self.view_tags_button = Button(self.window, text = "View Tags", font=FONT, command= lambda : view_tags())
         self.check_tag_button = Button(self.window, text="Check Tag", font=FONT, command=lambda:check_tag())
-        
         
         self.add_pattern_label = Label(self.window, text="Enter Pattern", font= FONT_BOLD)        
         self.add_patterns_text = Text(self.window, bg=BG_COLOR, fg = TEXT_COLOR, font="Calibri 20", 
@@ -999,13 +997,11 @@ class Application:
         self.add_response_text = Text(self.window, bg=BG_COLOR, fg = TEXT_COLOR, font="Calibri 20", 
                                       padx=5, pady=5, state="disabled", insertbackground= WHITE)
         
-        
         # reset button
         self.reset_button = Button(self.window, text= "Reset", font=FONT)
         # save button
         self.save_data_button = Button(self.window, text= "Save", font=FONT, command=lambda: save_data(), state="disabled")
     
-        
         # delete data variables
         
         self.enter_index_label = Label(self.window, text="Select Index", font=FONT)
@@ -1101,7 +1097,7 @@ class Application:
             else:
                 self._insert_message(msg, sender)
                 self.text_widget.update()
-            
+
                 err_count = 0 # error count reset
                 if msg in quit_txt:
                     self._insert_message("See ya later :)",bot_name)
@@ -1116,7 +1112,8 @@ class Application:
                     reply = normal_mode(msg)
                     self._insert_message(reply,bot_name)
                     self.text_widget.update()
-                    talk(reply)    
+                    talk(reply)
+                
          
          
         self.stop_button.configure(state="normal")
@@ -1147,8 +1144,8 @@ class Application:
         self.window.update()
         
         return
-          
-    # insert message
+          # insert message
+    
     def _insert_message(self, msg,sender):
         if not msg :
             return
@@ -1156,6 +1153,7 @@ class Application:
         
         # change text widget state to normal for a moment
         # this may have nothing to do as we are not using mouse so will refractor it
+
         self.text_widget.config(state="normal")
         self.text_widget.insert("end", msg)
         self.text_widget.config(state="disabled")

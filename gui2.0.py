@@ -10,14 +10,17 @@ from bot_utils import *
 import time
 
 
+
+quit_txt =["thank you"]
+
 '''Graphical Variables'''
-customtkinter.set_appearance_mode("dark")
-customtkinter.set_default_color_theme("blue")
+
 
 '''System Variables'''
 geometry = "1400x720"
 title = "EIRA - An AI GuideBot"
 CENTER = tkinter.CENTER
+bot = "EIRA"
 
 '''Files'''
 json_file = "D:\GLOBOT\database.json"
@@ -47,6 +50,13 @@ key_black = "key_b.png"
 transparent = "transparent.png"
 train_black = "train_b.png"
 train_white = "train_w.png"
+start_white = "start_w.png"
+start_black = "start_b.png"
+quit_black = "quit_b.png"
+quit_white = "quit_w.png"
+day_img = "day.png"
+night_img = "night.png"
+
 
 
 eye_open_w = 'eye_open_w.png'
@@ -69,8 +79,9 @@ LIGHT_GREY = "#5B6068"
 DARK_GREY = "#222222"
 AQUA = "#00FFFF"
 LIGHT_BLUE = "#1da2dc"
-
+LIGHT_GREEN = "#32e379"
 Color_theme = LIGHT_BLUE
+
 
 
 '''FONTS'''
@@ -204,7 +215,6 @@ class Mydb:
             return []
         return res
 
-
 class App:
     '''
     Main GUI class
@@ -219,6 +229,13 @@ class App:
         self.window = customtkinter.CTk()
         self.window.geometry(geometry)
         self.window.title(title)
+
+        self.Color_theme  = "blue"
+        self.curtheme = 'dark' 
+
+        customtkinter.set_appearance_mode(self.curtheme)
+        customtkinter.set_default_color_theme(self.Color_theme)
+
 
         '''IMAGE LOADINGS'''
         image_path = os.path.join(os.path.dirname(
@@ -257,11 +274,15 @@ class App:
             os.path.join(image_path, texture2)), size=(1600, 900))
         self.train_img = customtkinter.CTkImage(dark_image=Image.open(os.path.join(
             image_path, train_white)), light_image=Image.open(os.path.join(image_path, train_black)), size=(25, 25))
+        self.quit_img = customtkinter.CTkImage(dark_image=Image.open(os.path.join(
+            image_path, quit_white)), light_image=Image.open(os.path.join(image_path, quit_black)), size=(25, 25))
+        
+        self.start_img = customtkinter.CTkImage(dark_image=Image.open(os.path.join(
+            image_path, start_white)), light_image=Image.open(os.path.join(image_path, start_black)), size=(150, 150))
 
-        self.eye_cl = customtkinter.CTkImage(dark_image=Image.open(os.path.join(
-            image_path, eye_closed_w)), light_image=Image.open(os.path.join(image_path, eye_closed_b)), size=(20, 20))
-        self.eye_op = customtkinter.CTkImage(dark_image=Image.open(os.path.join(
-            image_path, eye_open_w)), light_image=Image.open(os.path.join(image_path, eye_open_b)), size=(20, 20))
+        self.theme_img = customtkinter.CTkImage(dark_image=Image.open(os.path.join(image_path, day_img)), 
+                                                light_image=Image.open(os.path.join(image_path, night_img)), size=(25, 25))
+
 
         '''Database Object'''
         self.db = Mydb()
@@ -272,10 +293,113 @@ class App:
 
         print(self.PASSWORD)
 
-        #self.home()
-        self.settings_page()
+        self.home()
+        #self.settings_page()
 
     def home(self) -> None:
+        
+        def get_response(query : str) :
+            device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+            with open(json_file, 'r') as database:
+                intents = json.load(database)
+
+            File = 'data.pth'
+            data = torch.load(File)
+
+            input_size = data["input_size"]
+            output_size = data["output_size"]
+            hidden_size = data["hidden_size"]
+            all_words = data["all_words"]
+            tags = data["tags"]
+            model_state = data["model_state"]
+
+            model = NeuralCode(input_size, hidden_size, output_size).to(device)
+            model.load_state_dict(model_state)
+            model.eval()
+            
+            sentence = tokenize(query)
+            X = bag_of_words(sentence, all_words)
+            X = X.reshape(1, X.shape[0])
+            X = torch.from_numpy(X)
+            output = model(X)
+            _, predicted = torch.max(output, dim=1)
+            tag = tags[predicted.item()]
+
+            probs = torch.softmax(output, dim=1)
+            prob = probs[0][predicted.item()]
+
+            if prob.item() > 0.75:
+                response_list = self.db.get_responses(tag)
+                k = random.randint(0, (len(response_list)-1))
+                return response_list[k]
+            else : return "Sorry! I did not understand. "
+
+        def add_text(text : str, sender : str) ->None :
+            text = f"{sender} : {text}\n\n"
+            self.text_box.configure(state = 'normal')
+            self.text_box.insert('end',text)
+            self.text_box.configure(state = 'disabled')
+            self.text_box.see('end')
+            self.window.update()
+
+        def start():
+            self.start_btn.destroy()
+            self.theme_btn.configure(state = 'disabled')
+            self.login_btn.configure(state = 'disabled')
+            self.blip.configure(image = self.green_blip_img)
+            self.text_box.place(relx = 0.5, rely = 0.5, relwidth = 1, relheight = 1, anchor = 'center')
+
+
+            self.window.update()
+            add_text("Hello, How can I help you?", bot)
+            talk("Hello, How can I help you?")
+            
+            idk_count = 0
+            run = True
+
+            while(run):
+                
+                text, key , sender = recognizer()
+
+                if key == 'm' :
+                    add_text(text,bot)
+                    self.window.update()
+                    talk("Sorry I cannot hear you")
+                    self.window.update()
+                    time.sleep(2)
+                    self.home()
+                elif key == 'e' :
+                    add_text("Network is down, please try later.\n Have a nice day!",bot)
+                    self.window.update()
+                    talk("Network is down, please try later. Have a nice day")
+                    run = False
+                elif key == 'a' :
+                    add_text(text,bot)
+                    self.window.update()
+                    if idk_count == 3 : run = False
+                    talk(text)
+                    self.window.update()
+                    idk_count+=1
+                elif key == 'n' :
+                    add_text(text, 'You')
+
+
+                    if text.lower() in quit_txt:
+                        add_text("Have a nice day!",bot)
+                        self.window.update()
+                        talk("have a nice day")
+                        run = False
+                    else:
+                        response = get_response(text)
+                        add_text(response,bot)
+                        self.window.update()
+                        talk(response)
+                        add_text("Can I help you with anything else?",bot)
+                        self.window.update()
+
+            self.home()
+
         '''PLACINGS'''
         self.frame_home = customtkinter.CTkFrame(master=self.window)
         self.frame_home.place(relwidth=1, relheight=1,
@@ -284,16 +408,30 @@ class App:
         self.blip = customtkinter.CTkLabel(
             master=self.frame_home, text="", width=50, image=self.red_blip_img)
         self.blip.place(relheight=0.05, relwidth=0.05, rely=0.01, relx=0.001)
+        
+        self.quit_btn = customtkinter.CTkButton(
+            master=self.frame_home, image=self.quit_img, text="", fg_color='transparent', command= lambda : quit())
+        self.quit_btn.place(
+            relheight=0.05, relwidth=0.03, rely=0.01, relx=0.88)
 
-        self.settings_btn = customtkinter.CTkButton(
-            master=self.frame_home, image=self.settings_img, text="", fg_color='transparent')
-        self.settings_btn.place(
+        self.theme_btn = customtkinter.CTkButton(
+            master=self.frame_home, image=self.theme_img, text="", fg_color='transparent', command = lambda : self.change_theme_home(None))
+        self.theme_btn.place(
             relheight=0.05, relwidth=0.035, rely=0.01, relx=0.91)
 
         self.login_btn = customtkinter.CTkButton(
             master=self.frame_home, text="Login", command=lambda: self.login_page(None))
         self.login_btn.place(
             relheight=0.05, relwidth=0.035, rely=0.01, relx=0.95)
+        
+        self.frame_text = customtkinter.CTkFrame(master= self.frame_home)
+        self.frame_text.place(relx = 0.5, rely = 0.5, relwidth = 0.8, relheight = 0.8, anchor = CENTER)
+
+        self.start_btn = customtkinter.CTkButton(master= self.frame_text, text = "", fg_color='transparent',border_color="#FFFFFF", border_width=2, corner_radius=50 ,image = self.start_img, command= lambda : start())
+        self.start_btn.place(relx = 0.5, rely = 0.5, anchor = 'center')
+        
+        self.text_box = customtkinter.CTkTextbox(master = self.frame_text, font = customtkinter.CTkFont(size=20) ,state = 'disabled')
+
 
     def login_page(self, event) -> None:
 
@@ -344,8 +482,11 @@ class App:
                 DARK_GREY, LIGHT_GREY), fg_color='transparent')
             self.sub_label.place(x=200, y=275, anchor=CENTER)
 
+        self.frame_login_master = customtkinter.CTkFrame(master=self.window)
+        self.frame_login_master.place(relheight = 1, relwidth = 1, relx = 0.5, rely = 0.5, anchor = 'center')
+
         self.frame_login = customtkinter.CTkFrame(
-            master=self.window, width=400, height=500, corner_radius=15)
+            master=self.frame_login_master, width=400, height=500, corner_radius=15)
         self.frame_login.place(relx=0.5, rely=0.5, anchor=CENTER)
 
         self.login_label = customtkinter.CTkLabel(
@@ -377,12 +518,19 @@ class App:
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         customtkinter.set_widget_scaling(new_scaling_float)
 
+    def change_theme_home(self, event) :
+        if self.curtheme == 'light' :
+            self.curtheme= 'dark'
+            customtkinter.set_appearance_mode(self.curtheme)
+        elif self.curtheme == 'dark' :
+            self.curtheme = 'light'
+            customtkinter.set_appearance_mode(self.curtheme)
+
     def change_theme(self, new_theme : str) :
         customtkinter.set_appearance_mode(new_theme)
-
+        
     def change_color(self, new_color : str) :
         customtkinter.set_default_color_theme(new_color)
-        Color_theme = new_color
         self.window.update()
         self.settings_page()
 
@@ -566,7 +714,7 @@ class App:
             self.tag_txt_entry.place(
                 relwidth=0.2, relx=0.136, rely=0.12, anchor=CENTER)
             self.tag_chk_btn = customtkinter.CTkButton(master=self.frame_add_data, text="Check", width=100, height=45, border_color=WHITE, border_width=2,
-                                                       fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: check_tag())
+                                                       text_color=(BLACK, WHITE), fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: check_tag())
             self.tag_chk_btn.place(relx=0.28, rely=0.12, anchor=CENTER)
 
             self.pattern_label = customtkinter.CTkLabel(master=self.frame_add_data, text="Enter Pattern", width=150, height=45, fg_color=(DARK_GREY), bg_color='transparent',
@@ -578,7 +726,7 @@ class App:
             self.pattern_txt_entry.place(
                 relwidth=0.2, relx=0.136, rely=0.30, anchor=CENTER)
             self.pattern_add_btn = customtkinter.CTkButton(master=self.frame_add_data, text="Add", width=100, height=45, border_color=WHITE, border_width=2,
-                                                           fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: add_pattern(), state='disabled')
+                                                           text_color=(BLACK, WHITE), fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: add_pattern(), state='disabled')
             self.pattern_add_btn.place(relx=0.28, rely=0.30, anchor=CENTER)
 
             self.response_label = customtkinter.CTkLabel(master=self.frame_add_data, text="Enter Response", width=150, height=45, fg_color=(DARK_GREY), bg_color='transparent',
@@ -590,7 +738,7 @@ class App:
             self.response_txt_entry.place(
                 relwidth=0.2, relx=0.136, rely=0.48, anchor=CENTER)
             self.response_add_btn = customtkinter.CTkButton(master=self.frame_add_data, text="Add", width=100, height=45, border_color=WHITE, border_width=2,
-                                                            fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: add_response(), state='disabled')
+                                                            text_color=(BLACK, WHITE), fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: add_response(), state='disabled')
             self.response_add_btn.place(relx=0.28, rely=0.48, anchor=CENTER)
 
             self.save_data_btn = customtkinter.CTkButton(master=self.frame_add_data, text="Save", width=150, height=45, border_width=2,
@@ -767,7 +915,7 @@ class App:
             self.tag_txt_entry.place(
                 relwidth=0.2, relx=0.136, rely=0.12, anchor=CENTER)
             self.tag_chk_btn = customtkinter.CTkButton(master=self.frame_del_data, text="Check", width=100, height=45, border_color=WHITE, border_width=2,
-                                                       fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: check_tag())
+                                                       text_color=(BLACK, WHITE), fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: check_tag())
             self.tag_chk_btn.place(relx=0.28, rely=0.12, anchor=CENTER)
 
             self.del_data_label = customtkinter.CTkLabel(master=self.frame_del_data, text="Data to be deleted", height=45, fg_color=(DARK_GREY), bg_color='transparent',
@@ -904,7 +1052,7 @@ class App:
                 relwidth=0.6, relx=0.04, rely=0.21, anchor='w')
 
             self.chk_pass_btn = customtkinter.CTkButton(master=self.frame_cp, text='Check', fg_color='transparent',
-                                                        width=100, height=45, border_width=2, font=customtkinter.CTkFont(size=14), command=lambda: check_pass())
+                                                        text_color=(BLACK, WHITE), width=100, height=45, border_width=2, font=customtkinter.CTkFont(size=14), command=lambda: check_pass())
             self.chk_pass_btn.place(relx=0.65, rely=0.21, anchor='w')
 
             self.en_new_pass_label = customtkinter.CTkLabel(master=self.frame_cp, text="New Password", height=40, font=customtkinter.CTkFont(
@@ -928,7 +1076,7 @@ class App:
                 relwidth=0.6, relx=0.04, rely=0.76, anchor='w')
 
             self.update_pass_btn = customtkinter.CTkButton(master=self.frame_cp, text='Update', fg_color='transparent', width=100,
-                                                           height=45, border_width=2, font=customtkinter.CTkFont(size=14), command=lambda: update_pass(), state='disabled')
+                                                           text_color=(BLACK, WHITE), height=45, border_width=2, font=customtkinter.CTkFont(size=14), command=lambda: update_pass(), state='disabled')
             self.update_pass_btn.place(relx=0.65, rely=0.76, anchor='w')
 
             self.pass_validity_label = customtkinter.CTkLabel(
@@ -1135,7 +1283,6 @@ class App:
 
             self.start_training_btn.place(relx = 0.5, rely = 0.92, anchor = CENTER)
 
-
         def about():
             self.switch('about')
 
@@ -1150,34 +1297,37 @@ class App:
             relheight=1, relwidth=0.15, relx=0.08, rely=0.5, anchor=CENTER)
 
         self.add_data_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Add Data', image=self.add_img, font=customtkinter.CTkFont(
-            size=16), fg_color='transparent', border_width=2, command=lambda: add_data(), anchor="w")
+            size=16), text_color=(BLACK, WHITE), fg_color='transparent', border_width=2, command=lambda: add_data(), anchor="w")
         self.add_data_btn.place(
             relwidth=0.95, relheight=0.05, relx=0.5, rely=0.05, anchor=CENTER)
 
         self.del_data_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Delete Data', image=self.delete_img, font=customtkinter.CTkFont(
-            size=16), fg_color='transparent', border_width=2, command=lambda: del_data(), anchor="w")
+            size=16),text_color=(BLACK, WHITE),  fg_color='transparent', border_width=2, command=lambda: del_data(), anchor="w")
         self.del_data_btn.place(
             relwidth=0.95, relheight=0.05, relx=0.5, rely=0.15, anchor=CENTER)
 
         self.change_pass_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Change Password', image=self.key_img, font=customtkinter.CTkFont(
-            size=16), fg_color='transparent', border_width=2, command=lambda: change_pass(), anchor="w")
+            size=16), text_color=(BLACK, WHITE), fg_color='transparent', border_width=2, command=lambda: change_pass(), anchor="w")
         self.change_pass_btn.place(
             relwidth=0.95, relheight=0.05, relx=0.5, rely=0.25, anchor=CENTER)
 
         self.system_setting_btn = customtkinter.CTkButton(master=self.side_panel_settings, image=self.sys_img, text='System', font=customtkinter.CTkFont(
-            size=16), fg_color='transparent', border_width=2, command=lambda: system_setting(self), anchor="w")
+            size=16), text_color=(BLACK, WHITE), fg_color='transparent', border_width=2, command=lambda: system_setting(self), anchor="w")
         self.system_setting_btn.place(
             relwidth=0.95, relheight=0.05, relx=0.5, rely=0.35, anchor=CENTER)
 
         self.training_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Train Bot', image=self.train_img, font=customtkinter.CTkFont(
-            size=16), fg_color='transparent', border_width=2, command=lambda: training_page(self), anchor="w")
+            size=16), text_color=(BLACK, WHITE), fg_color='transparent', border_width=2, command=lambda: training_page(self), anchor="w")
         self.training_btn.place(relwidth=0.95, relheight=0.05,
                              relx=0.5, rely=0.45, anchor=CENTER)
         
         self.about_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='About EIRA', image=self.robot_img, font=customtkinter.CTkFont(
-            size=16), fg_color='transparent', border_width=2, command=lambda: about(), anchor="w")
-        self.about_btn.place(relwidth=0.95, relheight=0.05,
-                             relx=0.5, rely=0.55, anchor=CENTER)
+            size=16), text_color=(BLACK, WHITE), fg_color='transparent', border_width=2, command=lambda: about(), anchor="w")
+        self.about_btn.place(relwidth=0.95, relheight=0.05, relx=0.5, rely=0.55, anchor=CENTER)
+        
+        self.home_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Home', image=self.home_img, font=customtkinter.CTkFont(
+            size=16),text_color=(BLACK, WHITE),  fg_color='transparent', border_width=2, command=lambda: self.home(), anchor="w")
+        self.home_btn.place(relwidth=0.95, relheight=0.05, relx=0.5, rely=0.95, anchor=CENTER)
 
     def back(self, dest: str) -> None:
         if dest == 'login':
@@ -1270,7 +1420,7 @@ class App:
             except:
                 pass 
 
-
+        
 
 if __name__ == "__main__":
     app = App()
