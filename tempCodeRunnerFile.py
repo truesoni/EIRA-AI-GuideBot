@@ -1,1 +1,1 @@
-  print(f"{key} , {sender} : {text}")
+password

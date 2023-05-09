@@ -160,3 +160,5 @@ def normal_mode(sentence):
         return idk
         #print(f'{bot_name}: I do not Understand...')
         #talk("I do not Understand...")
+
+

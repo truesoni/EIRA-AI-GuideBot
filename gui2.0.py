@@ -11,7 +11,7 @@ import time
 
 
 
-quit_txt =["thank you"]
+quit_txt =["thank you", "no thank you", "thanks", "no thanks", "bye", "thank you for you service", "have a nice day", "see ya", "see you", "shut up"]
 
 '''Graphical Variables'''
 
@@ -21,6 +21,8 @@ geometry = "1400x720"
 title = "EIRA - An AI GuideBot"
 CENTER = tkinter.CENTER
 bot = "EIRA"
+
+
 
 '''Files'''
 json_file = "D:\GLOBOT\database.json"
@@ -57,6 +59,12 @@ quit_white = "quit_w.png"
 day_img = "day.png"
 night_img = "night.png"
 
+shubham = "shubham.png"
+shiv = "shiv.png"
+shobhit = "shobhit.png"
+tapasvi = "tapasvi.png"
+shranjal = "shranjal.png"
+sangeet = "sangeet.png"
 
 
 eye_open_w = 'eye_open_w.png'
@@ -83,14 +91,6 @@ LIGHT_GREEN = "#32e379"
 Color_theme = LIGHT_BLUE
 
 
-
-'''FONTS'''
-
-
-'''System Texts'''
-
-PASSWORD = ""
-MASTER_PASSWORD = ""
 
 
 class Mydb:
@@ -233,6 +233,17 @@ class App:
         self.Color_theme  = "blue"
         self.curtheme = 'dark' 
 
+        self.about_string = f"""Welcome to BGIOEM! EIRA is designed to help students, faculty, and staff get the information they need quickly and easily. Whether you're looking for information on courses, events, or campus services, EIRA is here to help.
+
+                        EIRA is powered by advanced AI technology that allows it to understand natural language queries and provide accurate, relevant answers in real-time. It's like having a personal assistant at your fingertips, ready to help you with whatever you need.
+
+                        EIRA is constantly learning and improving, thanks to the power of machine learning algorithms. This means that the more you use it, the better it gets at understanding your queries and providing the information you need.
+
+                        At BGIOEM, we're committed to using the latest technology to enhance the student experience, and EIRA is just one example of this. We're proud to offer this innovative tool to our community and we hope you find it helpful. If you have any feedback or suggestions for how we can improve our chatbot, please don't hesitate to let us know.
+
+                        Thank you!"""
+
+
         customtkinter.set_appearance_mode(self.curtheme)
         customtkinter.set_default_color_theme(self.Color_theme)
 
@@ -284,6 +295,20 @@ class App:
                                                 light_image=Image.open(os.path.join(image_path, night_img)), size=(25, 25))
 
 
+        self.shubham_img = customtkinter.CTkImage(Image.open(
+            os.path.join(image_path, shubham)), size=(110, 140))
+        self.shiv_img = customtkinter.CTkImage(Image.open(
+            os.path.join(image_path, shiv)), size=(110, 140))
+        self.shobhit_img = customtkinter.CTkImage(Image.open(
+            os.path.join(image_path, shobhit)), size=(110, 140))
+        self.sangeet_img = customtkinter.CTkImage(Image.open(
+            os.path.join(image_path, sangeet)), size=(110, 140))
+        self.shranjal_img = customtkinter.CTkImage(Image.open(
+            os.path.join(image_path, shranjal)), size=(110, 140))
+        self.tapasvi_img = customtkinter.CTkImage(Image.open(
+            os.path.join(image_path, tapasvi)), size=(110, 140))
+        
+        
         '''Database Object'''
         self.db = Mydb()
 
@@ -301,8 +326,7 @@ class App:
         def get_response(query : str) :
             device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-            with open(json_file, 'r') as database:
-                intents = json.load(database)
+          
 
             File = 'data.pth'
             data = torch.load(File)
@@ -345,6 +369,7 @@ class App:
 
         def start():
             self.start_btn.destroy()
+            self.college_logo_home.destroy()
             self.theme_btn.configure(state = 'disabled')
             self.login_btn.configure(state = 'disabled')
             self.blip.configure(image = self.green_blip_img)
@@ -368,6 +393,7 @@ class App:
                     talk("Sorry I cannot hear you")
                     self.window.update()
                     time.sleep(2)
+                    run = False
                     self.home()
                 elif key == 'e' :
                     add_text("Network is down, please try later.\n Have a nice day!",bot)
@@ -395,7 +421,8 @@ class App:
                         add_text(response,bot)
                         self.window.update()
                         talk(response)
-                        add_text("Can I help you with anything else?",bot)
+                        add_text("Can I help you with anything else? (Say 'Thank You' to end )",bot)
+                        talk("Can I help you with anything else?") 
                         self.window.update()
 
             self.home()
@@ -427,11 +454,14 @@ class App:
         self.frame_text = customtkinter.CTkFrame(master= self.frame_home)
         self.frame_text.place(relx = 0.5, rely = 0.5, relwidth = 0.8, relheight = 0.8, anchor = CENTER)
 
+        self.college_logo_home = customtkinter.CTkLabel(
+            master=self.frame_text, text='', image=self.college_logo_img, fg_color='transparent')
+        self.college_logo_home.place(relx = 0.5, rely = 0.2,anchor=CENTER)
+
         self.start_btn = customtkinter.CTkButton(master= self.frame_text, text = "", fg_color='transparent',border_color="#FFFFFF", border_width=2, corner_radius=50 ,image = self.start_img, command= lambda : start())
         self.start_btn.place(relx = 0.5, rely = 0.5, anchor = 'center')
         
         self.text_box = customtkinter.CTkTextbox(master = self.frame_text, font = customtkinter.CTkFont(size=20) ,state = 'disabled')
-
 
     def login_page(self, event) -> None:
 
@@ -870,7 +900,7 @@ class App:
 
             def insert_all_data():
 
-                self.all_data_textbox.configure(state='normal')
+                self.all_data_textbox.configure(state='normal', wrap = 'word')
 
                 tags = self.db.get_tags()
 
@@ -1126,7 +1156,7 @@ class App:
             self.color_mode_optionemenu.place(relx = 0.8, rely = 0.2, anchor  = CENTER)
 
 
-            self.scaling_label = customtkinter.CTkLabel(self.frame_visual_settings, text="Change Background Color", font=customtkinter.CTkFont(size=15), bg_color=LIGHT_GREY, anchor = 'w', corner_radius=15)
+            self.scaling_label = customtkinter.CTkLabel(self.frame_visual_settings, text="Change UI Scaling", font=customtkinter.CTkFont(size=15), bg_color=LIGHT_GREY, anchor = 'w', corner_radius=15)
 
             self.scaling_label.place(relwidth = 0.6, relx = 0.05, rely = 0.35, anchor  = 'w')
 
@@ -1286,6 +1316,66 @@ class App:
         def about():
             self.switch('about')
 
+            self.frame_about = customtkinter.CTkFrame(
+                master=self.frame_settings)
+            self.frame_about.place(relheight=1, relwidth=0.84, relx=0.578, rely=0.5, anchor=CENTER)
+
+
+            self.about_label = customtkinter.CTkLabel(master=self.frame_about, text="\"ABOUT\"", height=45, fg_color=(DARK_GREY), bg_color='transparent',
+                                                               font=customtkinter.CTkFont(size=17), text_color=Color_theme, corner_radius=5)
+            
+         
+            self.about_label.place(relx = 0.5, rely = 0.09, anchor = CENTER, relwidth = 0.5)
+            
+            self.frame_content = customtkinter.CTkFrame(master=self.frame_about)
+            self.frame_content.place(relx = 0.5, rely = 0.5, relheight = 0.7, relwidth = 0.8, anchor = CENTER)
+
+            self.about_textbox = customtkinter.CTkTextbox(master = self.frame_content, wrap = 'word')
+            self.about_textbox.place(relx = 0.5, rely = 0.3, relheight = 0.5, relwidth = 0.9, anchor = CENTER)
+            self.about_textbox.insert('end', self.about_string)
+            self.about_textbox.insert('end', f'\n\n ~ Team EIRA')
+            self.about_textbox.configure(state = 'disabled')
+
+            self.frame_photo = customtkinter.CTkFrame(master=self.frame_content)
+            self.frame_photo.place(relx = 0.5, rely = 0.75, relheight = 0.4, relwidth = 0.9, anchor = CENTER)
+            
+            self.img_shubh = customtkinter.CTkLabel(master=self.frame_photo, image = self.shubham_img, text ="", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_shubh = customtkinter.CTkLabel(master=self.frame_photo, text ="Shubham Namdev\nECE", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_shubh.place(relx = 0.1, rely = 0.85, anchor  = CENTER)
+            self.img_shubh.place(relx = 0.1, rely = 0.4, anchor  = CENTER)
+
+            self.img_shiv = customtkinter.CTkLabel(master=self.frame_photo, image = self.shiv_img, text ="", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_shiv = customtkinter.CTkLabel(master=self.frame_photo, text ="Shiv Nandan Soni\nECE", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_shiv.place(relx = 0.26, rely = 0.85, anchor  = CENTER)
+            self.img_shiv.place(relx = 0.26, rely = 0.4, anchor  = CENTER)
+
+            self.img_sangeet = customtkinter.CTkLabel(master=self.frame_photo, image = self.sangeet_img, text ="", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_sangeet = customtkinter.CTkLabel(master=self.frame_photo, text ="Sangeet Kumar\nECE", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_sangeet.place(relx = 0.42, rely = 0.85, anchor  = CENTER)
+            self.img_sangeet.place(relx = 0.42, rely = 0.4, anchor  = CENTER)
+
+            self.img_shobhit = customtkinter.CTkLabel(master=self.frame_photo, image = self.shobhit_img, text ="", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_shobhit = customtkinter.CTkLabel(master=self.frame_photo, text ="Shobhit Soni\nECE", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_shobhit.place(relx = 0.58, rely = 0.85, anchor  = CENTER)
+            self.img_shobhit.place(relx = 0.58, rely = 0.4, anchor  = CENTER)
+
+            self.img_shranjal = customtkinter.CTkLabel(master=self.frame_photo, image = self.shranjal_img, text ="", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_shranjal = customtkinter.CTkLabel(master=self.frame_photo, text ="Shranjal Agrawal\nECE", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_shranjal.place(relx = 0.74, rely = 0.85, anchor  = CENTER)
+            self.img_shranjal.place(relx = 0.74, rely = 0.4, anchor  = CENTER)
+
+            self.img_tapasvi = customtkinter.CTkLabel(master=self.frame_photo, image = self.tapasvi_img, text ="", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_tapasvi = customtkinter.CTkLabel(master=self.frame_photo, text ="Tapasvi Roy\nECE", bg_color='transparent',corner_radius=5, anchor = CENTER)
+            self.label_tapasvi.place(relx = 0.9, rely = 0.85, anchor  = CENTER)
+            self.img_tapasvi.place(relx = 0.9, rely = 0.4, anchor  = CENTER)
+
+     
+
+
+
+
+
+
 
         self.frame_settings = customtkinter.CTkFrame(master=self.window)
         self.frame_settings.place(
@@ -1420,8 +1510,7 @@ class App:
             except:
                 pass 
 
-        
-
+    
 if __name__ == "__main__":
     app = App()
     app.window.mainloop()
