@@ -12,11 +12,11 @@ class Mydb:
         self.connection = sqlite3.connect('database.db')
         self.cursor = self.connection.cursor()
         #self.cursor.execute (f"""
-        #create table system_table (
-        #tag varchar(255),
-        #value varchar(255)
-        #)
+        #PRAGMA table_info(data_table);
         #""")
+#
+        #res = self.cursor.fetchall()
+        #print(res)
 
     def load_data(self, tag: str) -> str:
         self.cursor.execute(f"""
@@ -55,6 +55,20 @@ class Mydb:
         DELETE from data_table 
         WHERE tag = '{tag}';
         """)
+        self.connection.commit()
+    
+    def update_data2(self, tag : str, pattern : str, response : str) ->None :
+        self.cursor.execute(f"""
+        UPDATE data_table 
+        SET patterns = '{pattern}'
+        WHERE tag = '{tag}';
+        """)
+        self.cursor.execute(f"""
+        UPDATE data_table 
+        SET responses = '{response}'
+        WHERE tag = '{tag}';
+        """)
+
         self.connection.commit()
 
     def set_attr(self, tag: str, value: str) -> None:
@@ -134,4 +148,4 @@ class Mydb:
 
 db = Mydb()
 
-db.set_attr('password', '123')
+db.update_data2('test', '&hello&', '&hi&')

@@ -140,6 +140,20 @@ class Mydb:
         WHERE tag = '{tag}';
         """)
         self.connection.commit()
+    
+    def update_data2(self, tag : str, pattern : str, response : str) ->None :
+        self.cursor.execute(f"""
+        UPDATE data_table 
+        SET patterns = '{pattern}'
+        WHERE tag = '{tag}';
+        """)
+        self.cursor.execute(f"""
+        UPDATE data_table 
+        SET responses = '{response}'
+        WHERE tag = '{tag}';
+        """)
+
+        self.connection.commit()
 
     def set_attr(self, tag: str, value: str) -> None:
         self.cursor.execute(f"""
@@ -318,8 +332,8 @@ class App:
 
         print(self.PASSWORD)
 
-        self.home()
-        #self.settings_page()
+        #self.home()
+        self.settings_page()
 
     def home(self) -> None:
         
@@ -719,15 +733,6 @@ class App:
                     text=f"{text}", title="Save? (YES/NO)")
                 return dialog.get_input()
 
-            def pop_up() -> None:
-                self.pop_up = customtkinter.CTkLabel(master=self.frame_add_data, text="DATA SAVED", text_color=GREEN, width=320,
-                                                     height=180, bg_color=DARK_GREY, fg_color=DARK_GREY, corner_radius=10, font=customtkinter.CTkFont(size=20))
-
-                self.pop_up.place(relx=0.5, rely=0.5, anchor=CENTER)
-                self.window.update()
-                time.sleep(1.5)
-                reset()
-
             self.add_data_btn.configure(fg_color=Color_theme)
 
             self.frame_add_data = customtkinter.CTkFrame(
@@ -992,6 +997,255 @@ class App:
             self.del_validity_label = customtkinter.CTkLabel(
                 master=self.frame_del_data)
 
+        def update_data() :
+            self.switch('up_data')
+            self.TAG_N = ""
+            self.PATTERN_N = ""
+            self.RESPONSE_N = ""
+
+            def add_pattern():
+                pattern = self.pattern_txt_entry.get()
+
+                if len(pattern):
+                    self.PATTERN_N = self.PATTERN_N + '&' + pattern
+                    self.pattern_txt_entry.delete(0, customtkinter.END)
+                    self.pattern_validity_label.configure(
+                        text="Valid Pattern", text_color=GREEN)
+                    self.pattern_validity_label.place(
+                        relx=0.04, rely=0.35, anchor='w')
+
+                    self.update_data_textbox.configure(state='normal')
+                    self.update_data_textbox.insert(
+                        customtkinter.END, f'\"Pattern\" :    {pattern} \n\n')
+                    self.update_data_textbox.configure(state='disabled')
+
+                else:
+                    self.pattern_validity_label.configure(
+                        text="Please enter valid Pattern", text_color=RED)
+                    self.pattern_validity_label.place(
+                        relx=0.04, rely=0.35, anchor='w')
+
+            def add_response():
+                response = self.response_txt_entry.get()
+
+                if len(response):
+                    self.RESPONSE_N = self.RESPONSE_N + '&' + response
+                    self.response_txt_entry.delete(0, customtkinter.END)
+                    self.response_validity_label.configure(
+                        text="Valid Response", text_color=GREEN)
+                    self.response_validity_label.place(
+                        relx=0.04, rely=0.53, anchor='w')
+
+                    self.update_data_textbox.configure(state='normal')
+                    self.update_data_textbox.insert(
+                        customtkinter.END, f'\"Response\" :    {response} \n\n')
+                    self.update_data_textbox.configure(state='disabled')
+                else:
+                    self.response_validity_label.configure(
+                        text="Please enter valid Response", text_color=RED)
+                    self.response_validity_label.place(
+                        relx=0.04, rely=0.53, anchor='w')
+
+            def save_data():
+                if len(self.PATTERN_N) == 0:
+                    self.save_validity_label.configure(
+                        text='Please Enter Pattern', text_color=RED)
+                    self.save_validity_label.place(
+                        relx=0.19, rely=0.63, anchor='w')
+                    self.pattern_txt_entry.focus()
+                    return
+                if len(self.RESPONSE_N) == 0:
+                    self.save_validity_label.configure(
+                        text='Please Enter Response', text_color=RED)
+                    self.save_validity_label.place(
+                        relx=0.19, rely=0.63, anchor='w')
+                    self.response_txt_entry.focus()
+                    return
+               
+
+                
+                self.db.update_data2(
+                    tag=self.TAG_N, pattern=self.PATTERN_N, response=self.RESPONSE_N)
+                self.save_validity_label.configure(
+                    text='DATA SAVED', text_color=GREEN)
+                self.save_validity_label.place(
+                    relx=0.19, rely=0.63, anchor='w')
+                self.window.update()
+                time.sleep(1)
+                reset()
+                
+            def reset():
+                self.TAG_N = ""
+                self.PATTERN_N = ""
+                self.RESPONSE_N = ""
+                update_data()
+
+            def check_tag():
+                tags = self.db.get_tags()
+
+                tag = self.tag_txt_entry.get()
+
+                if tag  in tags and len(tag) != 0:
+                    self.tag_validity_label.configure(
+                        text='Valid Tag', text_color=GREEN)
+                    self.tag_validity_label.place(
+                        relx=0.04, rely=0.17, anchor='w')
+                    self.tag_validity_label.update()
+                    self.pattern_add_btn.configure(state='normal')
+                    self.response_add_btn.configure(state='normal')
+                    self.save_data_btn.configure(state='normal')
+                    self.tag_txt_entry.configure(state='readonly')
+                    self.tag_chk_btn.configure(text_color=GREEN, command=None)
+
+                    self.TAG_N = tag
+
+                    self.response_add_btn.configure(state = 'normal')
+                    self.pattern_add_btn.configure(state = 'normal')
+                    self.window.update()
+
+                    self.update_data_textbox.configure(state='normal')
+                    self.update_data_textbox.insert(
+                        customtkinter.END, f'\"TAG\" :    {self.TAG_N} \n\n')
+                    self.update_data_textbox.configure(state='disabled')
+
+                else:
+                    if tag not in tags:
+                        self.tag_validity_label.configure(
+                            text='Tag not in database', text_color=RED)
+                    if len(tag) == 0:
+                        self.tag_validity_label.configure(
+                            text='Invalid Tag', text_color=RED)
+
+                    self.tag_validity_label.place(
+                        relx=0.04, rely=0.17, anchor='w')
+                    self.tag_validity_label.update()
+                    self.tag_chk_btn.configure(text_color=RED)
+    
+            def insert_tags():
+                tag_disp_textbox.configure(state='normal')
+                tags = self.db.get_tags()
+                tag_disp_textbox.insert(customtkinter.END, '\"TAGS\" - \n\n')
+
+                for i, tag in enumerate(tags, 1):
+                    tag_disp_textbox.insert(
+                        customtkinter.END, f'({i}) : {tag} \n')
+
+                tag_disp_textbox.configure(state='disabled')
+
+            def insert_all_data():
+
+                self.all_data_textbox.configure(state='normal', wrap = 'word')
+
+                tags = self.db.get_tags()
+
+                for i, tag in enumerate(tags, 1):
+                    self.all_data_textbox.insert(
+                        customtkinter.END, f"\nTag  #{i} :   {tag}\n")
+
+                    patterns = self.db.get_patterns(tag)
+                    responses = self.db.get_responses(tag)
+                    for j, pattern in enumerate(patterns, 1):
+                        self.all_data_textbox.insert(
+                            customtkinter.END, f"\nPattern  #{j} :   {pattern}\n")
+
+                    for k, response in enumerate(responses, 1):
+                        self.all_data_textbox.insert(
+                            customtkinter.END, f"\nResponse #{k} :   {response}\n")
+
+                    self.all_data_textbox.insert(
+                        customtkinter.END, '__'*25 + '\n')
+
+                self.all_data_textbox.configure(state='disabled')
+
+
+            self.frame_update_data = customtkinter.CTkFrame(
+                master=self.frame_settings)
+            self.frame_update_data.place(
+                relheight=1, relwidth=0.84, relx=0.578, rely=0.5, anchor=CENTER)
+
+            self.tag_label = customtkinter.CTkLabel(master=self.frame_update_data, text="Enter Tag", height=45, fg_color=(DARK_GREY), bg_color='transparent',
+                                                    font=customtkinter.CTkFont(size=14), text_color=Color_theme, corner_radius=5)
+            self.tag_label.place(relwidth=0.2, relx=0.136,
+                                 rely=0.05, anchor=CENTER)
+            self.tag_txt_entry = customtkinter.CTkEntry(
+                master=self.frame_update_data, height=45, placeholder_text='Enter tag from database')
+            self.tag_txt_entry.place(
+                relwidth=0.2, relx=0.136, rely=0.12, anchor=CENTER)
+            self.tag_chk_btn = customtkinter.CTkButton(master=self.frame_update_data, text="Check", width=100, height=45, border_color=WHITE, border_width=2,
+                                                       text_color=(BLACK, WHITE), fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: check_tag())
+            self.tag_chk_btn.place(relx=0.28, rely=0.12, anchor=CENTER)
+
+            self.update_data_textbox = customtkinter.CTkTextbox(
+                master=self.frame_update_data,  state='disabled', font=customtkinter.CTkFont(size=14))
+            self.update_data_textbox.place(
+                relwidth=0.3, relheight=0.35, relx=0.03, rely=0.79, anchor='w')
+
+            self.all_data_textbox = customtkinter.CTkTextbox(
+                master=self.frame_update_data,  state='disabled', font=customtkinter.CTkFont(size=14))
+            self.all_data_textbox.place(
+                relwidth=0.4, relheight=0.9, relx=0.35, rely=0.54, anchor='w')
+            insert_all_data()
+            self.del_data_table_label = customtkinter.CTkLabel(master=self.frame_update_data, text="Your data Appears here", height=45, fg_color=(DARK_GREY), bg_color='transparent',
+                                                               font=customtkinter.CTkFont(size=14), text_color=Color_theme, corner_radius=5)
+            self.del_data_table_label.place(
+                relwidth=0.2, relx=0.45, rely=0.05, anchor='w')
+
+            tag_disp_textbox = customtkinter.CTkTextbox(
+                master=self.frame_update_data, state='disabled', font=customtkinter.CTkFont(size=14))
+            tag_disp_textbox.place(
+                relwidth=0.2, relheight=0.9, relx=0.77, rely=0.54, anchor='w')
+            insert_tags()
+
+            self.tag_validity_label = customtkinter.CTkLabel(
+                master=self.frame_update_data)
+            self.pattern_validity_label = customtkinter.CTkLabel(
+                master=self.frame_update_data)
+            self.response_validity_label = customtkinter.CTkLabel(
+                master=self.frame_update_data)
+            self.save_validity_label = customtkinter.CTkLabel(
+                master=self.frame_update_data)
+
+            self.pattern_label = customtkinter.CTkLabel(master=self.frame_update_data, text="Enter Pattern", width=150, height=45, fg_color=(DARK_GREY), bg_color='transparent',
+                                                        font=customtkinter.CTkFont(size=14), text_color=Color_theme, corner_radius=5)
+            self.pattern_label.place(
+                relwidth=0.2, relx=0.136, rely=0.23, anchor=CENTER)
+            self.pattern_txt_entry = customtkinter.CTkEntry(
+                master=self.frame_update_data, height=45, placeholder_text='Enter Pattern')
+            self.pattern_txt_entry.place(
+                relwidth=0.2, relx=0.136, rely=0.30, anchor=CENTER)
+            self.pattern_add_btn = customtkinter.CTkButton(master=self.frame_update_data, text="Add", width=100, height=45, border_color=WHITE, border_width=2,
+                                                           text_color=(BLACK, WHITE), fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: add_pattern(), state='disabled')
+            self.pattern_add_btn.place(relx=0.28, rely=0.30, anchor=CENTER)
+
+            self.response_label = customtkinter.CTkLabel(master=self.frame_update_data, text="Enter Response", width=150, height=45, fg_color=(DARK_GREY), bg_color='transparent',
+                                                         font=customtkinter.CTkFont(size=14), text_color=Color_theme, corner_radius=5)
+            self.response_label.place(
+                relwidth=0.2, relx=0.136, rely=0.41, anchor=CENTER)
+            self.response_txt_entry = customtkinter.CTkEntry(
+                master=self.frame_update_data, height=45, placeholder_text='Enter Response')
+            self.response_txt_entry.place(
+                relwidth=0.2, relx=0.136, rely=0.48, anchor=CENTER)
+            self.response_add_btn = customtkinter.CTkButton(master=self.frame_update_data, text="Add", width=100, height=45, border_color=WHITE, border_width=2,
+                                                            text_color=(BLACK, WHITE), fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: add_response(), state='disabled')
+            self.response_add_btn.place(relx=0.28, rely=0.48, anchor=CENTER)
+
+            self.save_data_btn = customtkinter.CTkButton(master=self.frame_update_data, text="Update", width=150, height=45, border_width=2,
+                                                         text_color=GREEN, fg_color='transparent', font=customtkinter.CTkFont(size=14), command=lambda: save_data(), state='disabled')
+            self.save_data_btn.place(relx=0.24, rely=0.58, anchor=CENTER)
+
+            self.reset_btn = customtkinter.CTkButton(master=self.frame_update_data, text="Reset", width=150, height=45, border_width=2,
+                                                     text_color=RED, fg_color=('transparent'), font=customtkinter.CTkFont(size=14), command=lambda: reset())
+            self.reset_btn.place(relx=0.1, rely=0.58, anchor=CENTER)
+
+            self.tag_table_label = customtkinter.CTkLabel(master=self.frame_update_data, text="Tags in Database", height=45, fg_color=(DARK_GREY), bg_color='transparent',
+                                                          font=customtkinter.CTkFont(size=14), text_color=Color_theme, corner_radius=5)
+            self.tag_table_label.place(
+                relwidth=0.2, relx=0.77, rely=0.05, anchor='w')
+            self.del_validity_label = customtkinter.CTkLabel(
+                master=self.frame_update_data)
+            
+            insert_all_data()
+
         def change_pass():
 
             def check_pass() -> None:
@@ -1233,7 +1487,7 @@ class App:
                 output_size = len(tags)
                 input_size = len(X_train[0])
                 learning_rate = .001
-                num_epochs = 1000
+                num_epochs = 2000
 
 
                 dataset = ChatDataSet()
@@ -1263,7 +1517,7 @@ class App:
                         optimizer.zero_grad()
                         loss.backward()
                         optimizer.step()
-                    if (epoch + 1) % 100 == 0:
+                    if (epoch + 1) % 200 == 0:
                         self.data_table.insert("end", f'Epoch [{epoch+1}/{num_epochs}], Loss : {loss.item():.4f}\n')
                         self.data_table.update()
 
@@ -1369,13 +1623,8 @@ class App:
             self.label_tapasvi.place(relx = 0.9, rely = 0.85, anchor  = CENTER)
             self.img_tapasvi.place(relx = 0.9, rely = 0.4, anchor  = CENTER)
 
+
      
-
-
-
-
-
-
 
         self.frame_settings = customtkinter.CTkFrame(master=self.window)
         self.frame_settings.place(
@@ -1396,28 +1645,35 @@ class App:
         self.del_data_btn.place(
             relwidth=0.95, relheight=0.05, relx=0.5, rely=0.15, anchor=CENTER)
 
+        self.update_data_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Update Data', image=self.delete_img, font=customtkinter.CTkFont(
+            size=16),text_color=(BLACK, WHITE),  fg_color='transparent', border_width=2, command=lambda: update_data(), anchor="w")
+        self.update_data_btn.place(
+            relwidth=0.95, relheight=0.05, relx=0.5, rely=0.25, anchor=CENTER)
+
         self.change_pass_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Change Password', image=self.key_img, font=customtkinter.CTkFont(
             size=16), text_color=(BLACK, WHITE), fg_color='transparent', border_width=2, command=lambda: change_pass(), anchor="w")
         self.change_pass_btn.place(
-            relwidth=0.95, relheight=0.05, relx=0.5, rely=0.25, anchor=CENTER)
+            relwidth=0.95, relheight=0.05, relx=0.5, rely=0.35, anchor=CENTER)
 
         self.system_setting_btn = customtkinter.CTkButton(master=self.side_panel_settings, image=self.sys_img, text='System', font=customtkinter.CTkFont(
             size=16), text_color=(BLACK, WHITE), fg_color='transparent', border_width=2, command=lambda: system_setting(self), anchor="w")
         self.system_setting_btn.place(
-            relwidth=0.95, relheight=0.05, relx=0.5, rely=0.35, anchor=CENTER)
+            relwidth=0.95, relheight=0.05, relx=0.5, rely=0.45, anchor=CENTER)
 
         self.training_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Train Bot', image=self.train_img, font=customtkinter.CTkFont(
             size=16), text_color=(BLACK, WHITE), fg_color='transparent', border_width=2, command=lambda: training_page(self), anchor="w")
-        self.training_btn.place(relwidth=0.95, relheight=0.05,
-                             relx=0.5, rely=0.45, anchor=CENTER)
+        self.training_btn.place(
+            relwidth=0.95, relheight=0.05, relx=0.5, rely=0.55, anchor=CENTER)
         
         self.about_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='About EIRA', image=self.robot_img, font=customtkinter.CTkFont(
             size=16), text_color=(BLACK, WHITE), fg_color='transparent', border_width=2, command=lambda: about(), anchor="w")
-        self.about_btn.place(relwidth=0.95, relheight=0.05, relx=0.5, rely=0.55, anchor=CENTER)
+        self.about_btn.place(
+            relwidth=0.95, relheight=0.05, relx=0.5, rely=0.65, anchor=CENTER)
         
         self.home_btn = customtkinter.CTkButton(master=self.side_panel_settings, text='Home', image=self.home_img, font=customtkinter.CTkFont(
             size=16),text_color=(BLACK, WHITE),  fg_color='transparent', border_width=2, command=lambda: self.home(), anchor="w")
-        self.home_btn.place(relwidth=0.95, relheight=0.05, relx=0.5, rely=0.95, anchor=CENTER)
+        self.home_btn.place(
+            relwidth=0.95, relheight=0.05, relx=0.5, rely=0.95, anchor=CENTER)
 
     def back(self, dest: str) -> None:
         if dest == 'login':
@@ -1437,7 +1693,7 @@ class App:
             except:
                 pass
             self.home()
-
+ 
     def switch(self, page: str) -> None:
         if page == 'login':
             try:
@@ -1457,10 +1713,12 @@ class App:
                 self.training_btn.configure(fg_color='transparent')
                 self.about_btn.configure(fg_color='transparent')
                 self.add_data_btn.configure(fg_color=Color_theme)
+                self.update_data_btn.configure(fg_color='transparent')
             except:
                 pass
         if page == 'del_data':
             try:
+                self.update_data_btn.configure(fg_color='transparent')
                 self.add_data_btn.configure(fg_color='transparent')
                 self.change_pass_btn.configure(fg_color='transparent')
                 self.system_setting_btn.configure(fg_color='transparent')
@@ -1469,8 +1727,20 @@ class App:
                 self.del_data_btn.configure(fg_color=Color_theme)
             except:
                 pass
+        if page == 'up_data' :
+            try:
+                self.add_data_btn.configure(fg_color='transparent')
+                self.change_pass_btn.configure(fg_color='transparent')
+                self.system_setting_btn.configure(fg_color='transparent')
+                self.training_btn.configure(fg_color='transparent')
+                self.about_btn.configure(fg_color='transparent')
+                self.del_data_btn.configure(fg_color='transparent')
+                self.update_data_btn.configure(fg_color=Color_theme)
+            except:
+                pass
         if page == 'change_pass':
             try:
+                self.update_data_btn.configure(fg_color='transparent')
                 self.del_data_btn.configure(fg_color='transparent')
                 self.add_data_btn.configure(fg_color='transparent')
                 self.system_setting_btn.configure(fg_color='transparent')
@@ -1481,6 +1751,7 @@ class App:
                 pass
         if page == 'system_settings' :
             try :
+                self.update_data_btn.configure(fg_color='transparent')
                 self.del_data_btn.configure(fg_color='transparent')
                 self.add_data_btn.configure(fg_color='transparent')
                 self.change_pass_btn.configure(fg_color='transparent')
@@ -1491,6 +1762,7 @@ class App:
                 pass
         if page == 'about' :
             try :
+                self.update_data_btn.configure(fg_color='transparent')
                 self.del_data_btn.configure(fg_color='transparent')
                 self.add_data_btn.configure(fg_color='transparent')
                 self.change_pass_btn.configure(fg_color='transparent')
@@ -1501,6 +1773,7 @@ class App:
                 pass
         if page == 'training_page' :
             try :
+                self.update_data_btn.configure(fg_color='transparent')
                 self.del_data_btn.configure(fg_color='transparent')
                 self.add_data_btn.configure(fg_color='transparent')
                 self.change_pass_btn.configure(fg_color='transparent')
